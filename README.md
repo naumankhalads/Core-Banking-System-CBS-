@@ -10,32 +10,47 @@ A modern, scalable core banking system built with Node.js, React, and PostgreSQL
 
 ### Setup
 
-1. **Clone and install**
+1. **Clone repository**
    ```bash
    git clone <repo>
    cd Core-Banking-System-CBS-
    ```
 
-2. **Configure database** (see [DATABASE_SETUP.md](./DATABASE_SETUP.md))
+2. **Clean up old dependencies** (IMPORTANT - removes MySQL packages)
+   ```bash
+   # macOS/Linux
+   bash scripts/setup.sh
+   
+   # Windows
+   scripts/setup.bat
+   ```
+   Or manually:
+   ```bash
+   cd backend
+   rm -rf node_modules package-lock.json pnpm-lock.yaml yarn.lock
+   npm install
+   ```
+
+3. **Configure database** (see [DATABASE_SETUP.md](./DATABASE_SETUP.md))
    ```bash
    cp backend/.env.example backend/.env
    # Edit with your database credentials
    ```
 
-3. **Initialize database**
+4. **Initialize database schema**
    ```bash
    cd backend
-   npm install
    node ../scripts/init-db.js
    ```
 
-4. **Start backend**
+5. **Start backend**
    ```bash
+   cd backend
    npm run dev
    # Runs on http://localhost:5000
    ```
 
-5. **Start frontend** (in new terminal)
+6. **Start frontend** (in new terminal)
    ```bash
    cd frontend
    npm install

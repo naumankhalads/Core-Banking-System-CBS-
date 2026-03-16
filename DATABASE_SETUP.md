@@ -4,6 +4,39 @@
 
 The application is now configured to use PostgreSQL via Supabase. This provides a cloud-hosted database that works seamlessly with Vercel deployments.
 
+## IMPORTANT: Clean Up Dependencies First ⚠️
+
+Since the package configuration was recently changed from MySQL to PostgreSQL, you MUST clean up and reinstall dependencies:
+
+**On macOS/Linux:**
+```bash
+cd backend
+rm -rf node_modules
+rm -f package-lock.json pnpm-lock.yaml yarn.lock
+npm install
+cd ..
+```
+
+**On Windows:**
+```bash
+cd backend
+rmdir /s /q node_modules (or use File Explorer to delete the folder)
+del package-lock.json pnpm-lock.yaml yarn.lock
+npm install
+cd ..
+```
+
+**Or run the automated setup script:**
+```bash
+# macOS/Linux
+bash scripts/setup.sh
+
+# Windows
+scripts/setup.bat
+```
+
+---
+
 ## Option 1: Supabase (Recommended for Vercel) ⭐
 
 ### Setup Steps
