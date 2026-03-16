@@ -1,48 +1,55 @@
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
+require('dotenv').config({ override: false });
 
 // Use Supabase PostgreSQL database
-const sequelize = new Sequelize(
-  process.env.POSTGRES_DATABASE || 'postgres',
-  process.env.POSTGRES_USER || 'postgres',
-  process.env.POSTGRES_PASSWORD,
-  {
-    host: process.env.POSTGRES_HOST || 'localhost',
-    port: process.env.POSTGRES_PORT || 5432,
-    dialect: 'postgres',
-    ssl: process.env.POSTGRES_SSL !== 'false',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
-      max: 10,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    },
-    define: {
-      timestamps: false,
-      underscored: false,
-      freezeTableName: true
-    }
+// Environment variables come from Vercel Supabase integration or .env file
+const sequelize = new Sequelize({
+  database: process.env.POSTGRES_DATABASE || 'postgres',
+  username: process.env.POSTGRES_USER || 'postgres',
+  password: process.env.POSTGRES_PASSWORD,
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT || 5432,
+  dialect: 'postgres',
+  ssl: true,
+  logging: process.env.NODE_ENV === 'development' ? console.log : false,
+  pool: {
+    max: 10,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  },
+  define: {
+    timestamps: false,
+    underscored: false,
+    freezeTableName: true
   }
-);
+});
 
 const testConnection = async () => {
   try {
+    console.log('\n🔗 Attempting database connection...');
+    console.log(`   Host: ${process.env.POSTGRES_HOST || '(not set)'}`);
+    console.log(`   Port: ${process.env.POSTGRES_PORT || 5432}`);
+    console.log(`   User: ${process.env.POSTGRES_USER || '(not set)'}`);
+    console.log(`   Database: ${process.env.POSTGRES_DATABASE || 'postgres'}`);
+    
     await sequelize.authenticate();
-    console.log('Database connection established successfully.');
+    console.log('✅ Database connection established successfully!\n');
     return true;
   } catch (error) {
-    console.error('⚠️  Unable to connect to the database:', error.message);
-    console.error('\n📋 Database Configuration:');
-    console.error('Ensure these environment variables are set:');
-    console.error('   POSTGRES_HOST - Database host (from Supabase)');
-    console.error('   POSTGRES_PORT - Database port (usually 5432)');
-    console.error('   POSTGRES_USER - Database user');
-    console.error('   POSTGRES_PASSWORD - Database password');
-    console.error('   POSTGRES_DATABASE - Database name');
-    console.error('\n💡 Using Supabase? Get credentials from:');
-    console.error('   https://app.supabase.com -> Settings -> Database');
-    console.error('\n⏳ Starting server without database connection...\n');
+    console.error('\n❌ Unable to connect to the database');
+    console.error(`Error: ${error.message}\n`);
+    console.error('📋 Environment Variables Check:');
+    console.error(`   POSTGRES_HOST: ${process.env.POSTGRES_HOST ? '✓ Set' : '✗ Missing'}`);
+    console.error(`   POSTGRES_PORT: ${process.env.POSTGRES_PORT ? '✓ Set' : '✗ Using default 5432'}`);
+    console.error(`   POSTGRES_USER: ${process.env.POSTGRES_USER ? '✓ Set' : '✗ Missing'}`);
+    console.error(`   POSTGRES_PASSWORD: ${process.env.POSTGRES_PASSWORD ? '✓ Set' : '✗ Missing'}`);
+    console.error(`   POSTGRES_DATABASE: ${process.env.POSTGRES_DATABASE ? '✓ Set' : '✗ Using default postgres'}`);
+    console.error('\n💡 Solutions:');
+    console.error('   1. If using Supabase: Check that the integration is connected in project settings');
+    console.error('   2. If using local .env file: Create backend/.env with POSTGRES_* variables');
+    console.error('   3. Get Supabase credentials from: https://app.supabase.com -> Settings -> Database');
+    console.error('\n⏳ Continuing server startup without database connection...\n');
     return false;
   }
 };

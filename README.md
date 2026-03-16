@@ -31,16 +31,32 @@ A modern, scalable core banking system built with Node.js, React, and PostgreSQL
    npm install
    ```
 
-3. **Configure database** (see [DATABASE_SETUP.md](./DATABASE_SETUP.md))
+3. **Configure database credentials**
+   
+   The system needs PostgreSQL connection details. You have two options:
+
+   **Option A: Vercel Project (with Supabase integration)**
+   - Supabase environment variables are automatically available
+   - No additional setup needed; skip to step 5
+
+   **Option B: Local development**
    ```bash
-   cp backend/.env.example backend/.env
-   # Edit with your database credentials
+   # Copy environment template
+   cp backend/.env.local.example backend/.env.local
+   
+   # Edit with your Supabase credentials
+   # Get from: https://app.supabase.com -> Settings -> Database
+   nano backend/.env.local  # or use your editor
    ```
 
-4. **Initialize database schema**
+4. **Initialize database schema** (first time only)
    ```bash
    cd backend
-   node ../scripts/init-db.js
+   # Set environment variable to sync database
+   export SYNC_DB=true
+   npm run dev
+   # After seeing "Database connection established", stop the server (Ctrl+C)
+   # This creates all required tables
    ```
 
 5. **Start backend**
