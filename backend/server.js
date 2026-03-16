@@ -64,20 +64,24 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     // Test database connection
-    await testConnection();
+    const dbConnected = await testConnection();
 
-    // Sync database (optional - use with caution in production)
-    if (process.env.SYNC_DB === 'true') {
+    // Sync database only if connected (optional - use with caution in production)
+    if (dbConnected && process.env.SYNC_DB === 'true') {
       await syncDatabase(process.env.FORCE_SYNC === 'true');
     }
 
     app.listen(PORT, () => {
-      console.log('═══════════════════════════════════════════');
-      console.log(`Server running on port ${PORT}`);
+      console.log('\n═══════════════════════════════════════════');
+      console.log(`✅ Server running on port ${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`API URL: http://localhost:${PORT}/api`);
       console.log(`Health Check: http://localhost:${PORT}/api/health`);
-      console.log('═══════════════════════════════════════════');
+      if (!dbConnected) {
+        console.log('\n⚠️  Database is not connected');
+        console.log('API endpoints will return database-related errors');
+      }
+      console.log('═══════════════════════════════════════════\n');
     });
   } catch (error) {
     console.error('Failed to start server:', error);
