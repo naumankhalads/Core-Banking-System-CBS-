@@ -2,9 +2,19 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
+// Find the project root by looking for backend directory
+let projectRoot = __dirname;
+while (!fs.existsSync(path.join(projectRoot, 'backend')) && projectRoot !== '/') {
+  projectRoot = path.dirname(projectRoot);
+}
+
+console.log(`[v0] Project root: ${projectRoot}`);
+
 // Only load dotenv if environment variables are not already set
 if (!process.env.POSTGRES_HOST) {
-  require('dotenv').config({ path: path.join(__dirname, '../backend/.env') });
+  const envPath = path.join(projectRoot, 'backend', '.env');
+  console.log(`[v0] Attempting to load .env from: ${envPath}`);
+  require('dotenv').config({ path: envPath });
 }
 
 async function initializeDatabase() {
@@ -27,11 +37,15 @@ async function initializeDatabase() {
     console.log('✅ Connected to database\n');
 
     // Read and execute schema
-    const schemaPath = path.join(__dirname, '../database/schema-postgres.sql');
+    const schemaPath = path.join(projectRoot, 'database', 'schema-postgres.sql');
+    console.log(`[v0] Looking for schema at: ${schemaPath}`);
+    
     if (!fs.existsSync(schemaPath)) {
-      console.error(`❌ Schema file not found: ${schemaPath}`);
+      console.error(`❌ Schema file not found at: ${schemaPath}`);
       process.exit(1);
     }
+    
+    console.log(`📄 Using schema file: ${schemaPath}\n`);
     const schema = fs.readFileSync(schemaPath, 'utf8');
 
     console.log('\nExecuting database schema...');
