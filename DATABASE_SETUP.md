@@ -1,190 +1,193 @@
 # Core Banking System - Database Setup Guide
 
-## Error: "connect ECONNREFUSED 127.0.0.1:3306"
+## Database Configuration: PostgreSQL (Supabase)
 
-This error means the application cannot connect to a MySQL database. Here are the solutions:
+The application is now configured to use PostgreSQL via Supabase. This provides a cloud-hosted database that works seamlessly with Vercel deployments.
 
-## Option 1: Local MySQL Setup (Development)
-
-### Prerequisites
-- [MySQL Community Server](https://dev.mysql.com/downloads/mysql/)
-- [MySQL Workbench](https://dev.mysql.com/downloads/workbench/) (optional but recommended)
+## Option 1: Supabase (Recommended for Vercel) ⭐
 
 ### Setup Steps
 
-1. **Install MySQL**
-   ```bash
-   # macOS (using Homebrew)
-   brew install mysql
-   brew services start mysql
-   
-   # Or download from: https://dev.mysql.com/downloads/mysql/
-   ```
+1. **Create Supabase Account**
+   - Go to [supabase.com](https://supabase.com)
+   - Sign up with GitHub or email
+   - Create a new organization
 
-2. **Create Database**
-   ```bash
-   mysql -u root -p
-   # Enter password (if set) or press Enter
-   
-   CREATE DATABASE core_banking_system;
-   ```
+2. **Create New Project**
+   - Click "New Project"
+   - Choose a name: `core-banking-system`
+   - Set a strong password
+   - Choose region closest to you
+   - Click "Create new project"
 
-3. **Create .env file in backend folder**
+3. **Get Database Credentials**
+   - Go to **Settings** → **Database** → **Connection Strings**
+   - Select "URI" tab
+   - Copy the PostgreSQL connection string (it will look like: `postgresql://postgres:password@host.supabase.co:5432/postgres`)
+
+4. **Extract Connection Details**
+   From the connection string, extract:
+   - **POSTGRES_HOST**: `host.supabase.co` (the domain part)
+   - **POSTGRES_PORT**: `5432`
+   - **POSTGRES_USER**: `postgres`
+   - **POSTGRES_PASSWORD**: Your project password
+   - **POSTGRES_DATABASE**: `postgres`
+
+5. **Create .env file in backend folder**
    ```bash
    cp backend/.env.example backend/.env
    ```
 
-4. **Edit backend/.env**
-   ```
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASSWORD=your_password  # Leave empty if no password set
-   DB_NAME=core_banking_system
+6. **Update backend/.env** with your Supabase credentials:
+   ```env
+   POSTGRES_HOST=xxxxx.supabase.co
+   POSTGRES_PORT=5432
+   POSTGRES_USER=postgres
+   POSTGRES_PASSWORD=your-password-here
+   POSTGRES_DATABASE=postgres
+   POSTGRES_SSL=true
+   
    NODE_ENV=development
-   SYNC_DB=true
+   SYNC_DB=false
    ```
 
-5. **Start the server**
+7. **Initialize Database Schema**
    ```bash
    cd backend
    npm install
+   node ../scripts/init-db.js
+   ```
+
+8. **Start the server**
+   ```bash
+   npm run dev
+   ```
+
+You should see:
+```
+✅ Connected to database
+✅ Server running on port 5000
+```
+
+---
+
+## Option 2: Neon (PostgreSQL Alternative)
+
+### Setup Steps
+
+1. **Create Neon Account**
+   - Go to [neon.tech](https://neon.tech)
+   - Sign up and create a project
+
+2. **Get Connection Details**
+   - Copy the connection string
+   - Extract host, user, password, and database
+
+3. **Update .env with Neon credentials**
+   ```env
+   POSTGRES_HOST=ep-xxxxx.us-east-2.neon.tech
+   POSTGRES_PORT=5432
+   POSTGRES_USER=postgres
+   POSTGRES_PASSWORD=your-password
+   POSTGRES_DATABASE=neondb
+   POSTGRES_SSL=true
+   ```
+
+4. **Initialize and start**
+   ```bash
+   npm install
+   node ../scripts/init-db.js
    npm run dev
    ```
 
 ---
 
-## Option 2: PlanetScale (MySQL - Recommended for Production)
+## Initializing Database Schema
 
-### Setup Steps
+After configuring your environment variables, you need to create the database tables:
 
-1. **Create PlanetScale Account**
-   - Go to [planetscale.com](https://planetscale.com)
-   - Sign up and create a new organization
-
-2. **Create Database**
-   - Click "Create a database"
-   - Name it `core_banking_system`
-   - Choose your region
-
-3. **Get Connection String**
-   - Go to "Connect" tab
-   - Select "Node.js" from the dropdown
-   - Copy the connection string
-
-4. **Update .env**
-   ```
-   DATABASE_URL=mysql://[username]:[password]@[host]/[database]
-   NODE_ENV=production
-   ```
-
-5. **Connect the database**
-   - Use the provided connection string
-   - The Sequelize ORM will work with PlanetScale out of the box
-
----
-
-## Option 3: Neon (PostgreSQL)
-
-If you want to use PostgreSQL instead, you'll need to:
-
-1. Update database configuration to use PostgreSQL dialect
-2. Modify the database.js file
-
-### Steps
 ```bash
-# Install PostgreSQL driver
-npm install pg pg-hstore
-
-# Update backend/config/database.js
-# Change dialect from 'mysql' to 'postgres'
-# Update connection parameters
+cd backend
+npm install
+node ../scripts/init-db.js
 ```
 
----
-
-## Option 4: AWS RDS
-
-1. Create RDS MySQL instance on AWS
-2. Configure security groups to allow connections
-3. Get the endpoint and credentials
-4. Update .env with RDS connection details
+This script will:
+- Connect to your PostgreSQL database
+- Create all required tables (Users, Customers, Accounts, Transactions, AuditLogs)
+- Create views for reporting
+- Insert default admin user
 
 ---
 
 ## Verifying Connection
 
-Once configured, run:
+Once configured:
 
 ```bash
 cd backend
 npm run dev
 ```
 
-You should see:
+Look for messages like:
 ```
-✅ Database connection established successfully.
+✅ Connected to database
 ✅ Server running on port 5000
 ```
 
-If you still get the error, check:
-- MySQL service is running: `mysql -u root -p -e "SELECT 1"`
-- Database exists: `mysql -u root -p -e "SHOW DATABASES LIKE 'core_banking_system'"`
-- .env file is in the correct location (backend/.env)
-- .env has correct values with no extra spaces
+If you see errors, check:
+- Supabase project is active
+- Database credentials are correct (copy-paste carefully)
+- Network allows connection from your location
+- `POSTGRES_SSL=true` is set (required for Supabase)
 
 ---
 
 ## Troubleshooting
 
-### MySQL Server Not Running
+### Error: "connect ECONNREFUSED"
+- Database credentials are incorrect
+- Supabase project hasn't finished provisioning (wait a few minutes)
+- Network/firewall blocking connection
+
+### Error: "Unknown database" 
+- Database name is wrong (usually `postgres` for Supabase)
+- Check spelling carefully
+
+### SSL Connection Error
+- Ensure `POSTGRES_SSL=true` in .env
+- Some networks require SSL connections to Supabase
+
+### Need to Recreate Tables?
 ```bash
-# macOS
-brew services restart mysql
-
-# Linux
-sudo systemctl restart mysql
-
-# Windows
-# Use MySQL Services in Admin Tools
-```
-
-### Connection Timeout
-- Increase timeout in database.js (acquire: 60000)
-- Check firewall settings
-- Verify host and port are correct
-
-### Authentication Failed
-- Verify username and password
-- Check if user has proper permissions: `GRANT ALL ON core_banking_system.* TO 'root'@'localhost';`
-
-### Cannot Find Database
-```bash
-# Create it manually
-mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS core_banking_system;"
+# Delete and recreate (careful in production!)
+node ../scripts/init-db.js
 ```
 
 ---
 
-## Quick Start with Docker
+## Deploying to Vercel
 
-If you have Docker installed:
+1. **Add Environment Variables to Vercel**
+   - Go to Project Settings → Environment Variables
+   - Add all POSTGRES_* variables
+   - Redeploy the application
 
-```bash
-# Run MySQL in Docker
-docker run --name mysql-cbs -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=core_banking_system -p 3306:3306 -d mysql:latest
+2. **Run Database Initialization** (if needed)
+   - Create a deployment-time script or run manually once
 
-# Update .env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=root
-DB_NAME=core_banking_system
-
-# Start the server
-npm run dev
-```
+3. **Verify Production Connection**
+   - Check Vercel logs: `npm run dev` equivalent should show successful connection
 
 ---
 
-For production deployment to Vercel, use PlanetScale or another managed database service.
+## Database Models
+
+The system uses these tables:
+- **Users**: Authentication and authorization
+- **Customers**: Customer information
+- **Accounts**: Bank accounts per customer
+- **Transactions**: Transfers and account activities
+- **AuditLogs**: System audit trail
+
+All tables are created automatically by the init-db.js script.
