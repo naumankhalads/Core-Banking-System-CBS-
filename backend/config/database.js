@@ -1,14 +1,18 @@
 const { Sequelize } = require('sequelize');
-require('dotenv').config({ override: false });
+
+// Only load dotenv if environment variables are not already set by Vercel
+if (!process.env.POSTGRES_HOST) {
+  require('dotenv').config();
+}
 
 // Use Supabase PostgreSQL database
 // Environment variables come from Vercel Supabase integration or .env file
 const sequelize = new Sequelize({
-  database: process.env.POSTGRES_DATABASE || 'postgres',
-  username: process.env.POSTGRES_USER || 'postgres',
+  database: process.env.POSTGRES_DATABASE,
+  username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   host: process.env.POSTGRES_HOST,
-  port: process.env.POSTGRES_PORT || 5432,
+  port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
   dialect: 'postgres',
   ssl: true,
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
